@@ -60,6 +60,9 @@ async function upsertProduct(p: ShopifyProduct) {
   const priceMax = prices.length ? Math.max(...prices) : 0;
   const available = p.variants.some((v) => v.available);
   const status = p.status ?? (available ? 'active' : 'unavailable');
+  const tags = Array.isArray(p.tags)
+    ? p.tags
+    : String(p.tags ?? '').split(',').map((tag) => tag.trim()).filter(Boolean);
 
   await query(
     `INSERT INTO products (id, handle, title, body_html, vendor, product_type, tags, status, options, images,
@@ -72,7 +75,7 @@ async function upsertProduct(p: ShopifyProduct) {
        published_at=EXCLUDED.published_at, created_at=EXCLUDED.created_at, updated_at=EXCLUDED.updated_at,
        price_min=EXCLUDED.price_min, price_max=EXCLUDED.price_max, available=EXCLUDED.available,
        last_synced_at=now()`,
-    [p.id, p.handle, p.title, p.body_html ?? '', p.vendor, p.product_type, p.tags, status,
+    [p.id, p.handle, p.title, p.body_html ?? '', p.vendor, p.product_type, tags, status,
      JSON.stringify(p.options), JSON.stringify(p.images), p.published_at, p.created_at, p.updated_at,
      priceMin, priceMax, available],
   );
@@ -97,8 +100,9 @@ async function upsertVariant(v: ShopifyVariant, p: ShopifyProduct) {
        inventory_quantity=EXCLUDED.inventory_quantity, weight=EXCLUDED.weight, weight_unit=EXCLUDED.weight_unit,
        created_at=EXCLUDED.created_at, updated_at=EXCLUDED.updated_at`,
     [v.id, v.product_id, v.title, v.sku ?? null, v.barcode ?? null, v.price, v.compare_at_price ?? null,
-     v.option1 ?? null, v.option2 ?? null, v.option3 ?? null, v.position, v.requires_shipping, v.taxable,
-     v.available, v.inventory_quantity, v.weight ?? 0, v.weight_unit ?? 'g', v.created_at, v.updated_at],
+     v.option1 ?? null, v.option2 ?? null, v.option3 ?? null, v.position ?? 1, v.requires_shipping ?? true,
+     v.taxable ?? true, v.available ?? false, v.inventory_quantity ?? 0, v.weight ?? 0,
+     v.weight_unit ?? 'g', v.created_at, v.updated_at],
   );
 }
 
