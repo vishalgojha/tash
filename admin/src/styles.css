@@ -162,3 +162,13 @@ tbody tr:hover { background: rgba(88, 166, 255, 0.05); }
 .agent-form { display: flex; gap: 8px; }
 .agent-form .input { flex: 1; }
 @media (max-width: 760px) { .agent-layout { grid-template-columns: 1fr; } .agent-chat-card { min-height: 500px; } }
+
+.login-shell { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: radial-gradient(circle at 50% 0%, #222c3c 0, var(--bg) 45%); }
+.login-card { width: min(100%, 390px); background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 32px; box-shadow: 0 24px 70px rgba(0, 0, 0, .28); }
+.login-card .brand-mark { margin-bottom: 22px; }
+.login-kicker { color: var(--accent); font-size: 11px; letter-spacing: 2px; font-weight: 700; }
+.login-card h1 { margin: 4px 0 4px; font-size: 26px; }
+.login-card .muted { margin: 0 0 24px; padding: 0; }
+.login-button { width: 100%; margin-top: 4px; }
+.login-warning { border: 1px solid rgba(210, 153, 34, .45); color: var(--warn); background: rgba(210, 153, 34, .1); padding: 9px 10px; border-radius: 8px; margin-bottom: 14px; font-size: 12px; }
+.login-foot { color: var(--dim); font-size: 11px; text-align: center; margin-top: 20px; }
