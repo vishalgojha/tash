@@ -135,7 +135,7 @@ async function syncCollections() {
          ON CONFLICT (id) DO UPDATE SET handle=EXCLUDED.handle, title=EXCLUDED.title,
            body_html=EXCLUDED.body_html, sort_order=EXCLUDED.sort_order, published_at=EXCLUDED.published_at,
            updated_at=EXCLUDED.updated_at, image=EXCLUDED.image, last_synced_at=now()`,
-        [c.id, c.handle, c.title, c.body_html ?? '', c.sort_order, c.published_at, c.updated_at, c.image ? JSON.stringify(c.image) : null],
+         [c.id, c.handle, c.title, c.body_html ?? '', c.sort_order ?? 'manual', c.published_at, c.updated_at, c.image ? JSON.stringify(c.image) : null],
       );
     }
   }
