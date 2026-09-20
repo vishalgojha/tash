@@ -1,12 +1,38 @@
 let geminiKey = process.env.GEMINI_API_KEY ?? '';
 let groqKey = process.env.GROQ_API_KEY ?? '';
+let openRouterKey = process.env.OPENROUTER_API_KEY ?? '';
 
 export function hasLlm() {
-  return Boolean(geminiKey || groqKey);
+  return Boolean(openRouterKey || geminiKey || groqKey);
 }
 
 /** Lightweight LLM call for the agent. Returns null when no key is configured or on failure. */
 export async function chat(system: string, user: string, history: { role: string; content: string }[] = []): Promise<string | null> {
+  if (openRouterKey) {
+    try {
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openRouterKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.SHOPIFY_STOREFRONT_URL ?? 'https://tashbags.com',
+          'X-Title': 'Tash Bags Business OS',
+        },
+        body: JSON.stringify({
+          model: 'openrouter/free',
+          messages: [{ role: 'system', content: system }, ...history.slice(-8), { role: 'user', content: user }],
+        }),
+      });
+      if (res.ok) {
+        const data: any = await res.json();
+        const content = data?.choices?.[0]?.message?.content;
+        if (typeof content === 'string' && content.trim()) return content.trim();
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
   if (groqKey) {
     try {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {

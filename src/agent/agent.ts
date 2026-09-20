@@ -272,5 +272,5 @@ export async function answerText(text: string, chatId = 'cli'): Promise<string> 
 }
 
 export function logAgentInfo() {
-  log(`agent ready — LLM ${hasLlm() ? 'on' : 'off (no GEMINI_API_KEY/GROQ_API_KEY)'} · laptop alerts ${env.agentLaptopAlert ? 'on' : 'off'} · owner phones: ${env.agentOwnerPhones.length}`);
+  log(`agent ready — LLM ${hasLlm() ? 'on' : 'off (no OPENROUTER_API_KEY/GEMINI_API_KEY/GROQ_API_KEY)'} · laptop alerts ${env.agentLaptopAlert ? 'on' : 'off'} · owner phones: ${env.agentOwnerPhones.length}`);
 }
