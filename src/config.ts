@@ -9,7 +9,7 @@ export const env = {
   port: Number(process.env.PORT ?? 4000),
   host: process.env.HOST ?? '0.0.0.0',
   syncCron: (process.env.SYNC_CRON ?? '0 */4 * * *').trim(),
-  wahaApiUrl: (process.env.WAHA_API_URL ?? 'http://localhost:3000').replace(/\/$/, ''),
+  wahaApiUrl: (process.env.WAHA_API_URL ?? '').replace(/\/$/, ''),
   wahaApiKey: process.env.WAHA_API_KEY ?? '',
   wahaSession: process.env.WAHA_SESSION ?? 'default',
   agentOwnerPhones: (process.env.AGENT_OWNER_PHONES ?? '')

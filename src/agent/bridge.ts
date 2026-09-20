@@ -36,8 +36,12 @@ export async function ensureSession() {
   if (!hasWaha()) return;
   const existing: string[] = await sessions().catch(() => []);
   if (existing.includes(env.wahaSession)) return;
-  await fetch(`${env.wahaApiUrl}/api/sessions/${env.wahaSession}?start=true`, { method: 'POST', headers: headers() });
-  log(`WAHA session ${env.wahaSession} requested (scan QR if requested by WAHA)`);
+  try {
+    await fetch(`${env.wahaApiUrl}/api/sessions/${env.wahaSession}?start=true`, { method: 'POST', headers: headers() });
+    log(`WAHA session ${env.wahaSession} requested (scan QR if requested by WAHA)`);
+  } catch (e: any) {
+    log('WAHA session start failed (is WAHA reachable?)', e.message);
+  }
 }
 
 export async function sendText(chatId: string, text: string) {
