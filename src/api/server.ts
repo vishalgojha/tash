@@ -58,16 +58,12 @@ export async function startServer() {
   }
 }
 
-export async function boot() {
-  await query(`SELECT 1`).catch((e) => {
-    throw new Error(`cannot reach postgres (${e.code ?? e.message}) — start with: docker compose up -d && npm run migrate`);
-  });
-
-  if (env.syncCron) {
+export async function boot(dbConnected = true) {
+  if (dbConnected && env.syncCron) {
     await cronLoad(env.syncCron);
   }
   await startServer();
-  log(`server up on http://${env.host}:${env.port}`);
+  log(`server up on http://${env.host}:${env.port} · db ${dbConnected ? 'connected' : 'DEGRADED'}`);
   logAgentInfo();
   await ensureSession();
 }

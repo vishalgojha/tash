@@ -7,8 +7,9 @@ import { pool } from './pool.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const migrationsDir = path.join(__dirname, 'migrations');
 
-async function migrate() {
+export async function migrate(): Promise<string[]> {
   const client = await pool.connect();
+  const appliedNow: string[] = [];
   try {
     await client.query(`CREATE TABLE IF NOT EXISTS _migrations (
       id SERIAL PRIMARY KEY,
@@ -22,7 +23,6 @@ async function migrate() {
 
     for (const file of files) {
       if (applied.has(file)) {
-        console.log(`skip   ${file}`);
         continue;
       }
       const sql = await readFile(path.join(migrationsDir, file), 'utf8');
@@ -31,18 +31,27 @@ async function migrate() {
       await client.query(sql);
       await client.query(`INSERT INTO _migrations (name) VALUES ($1)`, [file]);
       await client.query('COMMIT');
+      appliedNow.push(file);
     }
     console.log('migrations up to date');
+    return appliedNow;
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;
   } finally {
     client.release();
-    await pool.end();
   }
 }
 
-migrate().catch((err) => {
-  console.error('migration failed:', err);
-  process.exit(1);
-});
+// Direct CLI run: `npm run migrate`
+if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('migrate.ts')) {
+  migrate()
+    .then(async () => {
+      await pool.end();
+    })
+    .catch(async (err) => {
+      console.error('migration failed:', err);
+      await pool.end().catch(() => {});
+      process.exit(1);
+    });
+}
