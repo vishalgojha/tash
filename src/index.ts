@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { boot } from './api/server.js';
 import { pool } from './db/pool.js';
 import { migrate } from './db/migrate.js';
-import { syncCatalog, syncOrders } from './shopify/sync.js';
+import { syncCatalog, syncOrders, syncAdminInventory } from './shopify/sync.js';
 import { log } from './config.js';
 
 async function main() {
@@ -21,6 +21,7 @@ async function main() {
     void (async () => {
       try {
         await syncCatalog();
+        await syncAdminInventory();
         await syncOrders();
       } catch (e: any) {
         log('background Shopify sync warning:', e.message);

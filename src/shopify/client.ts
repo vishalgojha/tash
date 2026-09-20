@@ -95,3 +95,8 @@ export async function* adminOrders(): AsyncGenerator<ShopifyOrder[]> {
   if (!hasAdminAccess()) return;
   yield* paginate<ShopifyOrder>(`${adminBase()}/orders.json?status=any&limit=${PER_PAGE}`, adminHeaders);
 }
+
+export async function* adminProducts(): AsyncGenerator<any[]> {
+  if (!hasAdminAccess()) return;
+  yield* paginate<any>(`${adminBase()}/products.json?limit=${PER_PAGE}&fields=id,variants`, adminHeaders);
+}

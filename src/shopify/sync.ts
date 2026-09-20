@@ -12,6 +12,7 @@ import {
   getCollectionProducts,
   adminCustomers,
   adminOrders,
+  adminProducts,
 } from './client.js';
 import { hasAdminAccess, log, hasShiprocket } from '../config.js';
 import { syncShiprocketOrders } from '../shiprocket/client.js';
@@ -51,6 +52,24 @@ export async function syncCatalog(): Promise<void> {
     await query(`UPDATE sync_log SET status='failed', message=$1, finished_at=now()
                  WHERE source='shopify' AND kind='catalog' AND status='running'`, [String(err?.message ?? err)]);
     throw err;
+  }
+}
+
+export async function syncAdminInventory() {
+  if (!hasAdminAccess()) return;
+  for await (const page of adminProducts()) {
+    for (const product of page) {
+      for (const variant of product.variants ?? []) {
+        const quantity = Math.max(0, Number(variant.inventory_quantity ?? 0));
+        const available = quantity > 0;
+        await query(`UPDATE product_variants SET inventory_quantity=$1, available=$2 WHERE id=$3`, [quantity, available, variant.id]);
+        await query(
+          `UPDATE channel_listings SET stock=$1, status=$2, last_synced_at=now()
+             WHERE channel_id='shopify' AND variant_id=$3`,
+          [quantity, available ? 'active' : 'unavailable', variant.id],
+        );
+      }
+    }
   }
 }
 
