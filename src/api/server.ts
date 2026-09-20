@@ -51,6 +51,8 @@ export function buildServer() {
       'POST /api/v1/sync',
       'POST /api/v1/agent/webhook',
       'GET  /api/v1/agent/test',
+       'POST /api/v1/agent/chat',
+       'POST /api/v1/agent/ops',
       'POST /api/v1/channels/:channel/price',
       '--- payments (Razorpay) ---',
       'POST /api/v1/payments/razorpay/order',

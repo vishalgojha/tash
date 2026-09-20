@@ -6,6 +6,8 @@ import { listChannels, importListings, type ListingInput } from '../../channels/
 import { getShippingRates } from '../../shiprocket/client.js';
 import { parseWebhook, notifyLaptop } from '../../agent/bridge.js';
 import { handleIncoming } from '../../agent/agent.js';
+import { answerChat } from '../../agent/chat-agent.js';
+import { answerOps } from '../../agent/ops-agent.js';
 
 export async function productsRoutes(app: FastifyInstance) {
   app.get('/products', async (req) => {
@@ -285,5 +287,19 @@ export async function agentRoutes(app: FastifyInstance) {
     if (!q.text) return reply.code(400).send({ error: '?text= required' });
     const message = await handleIncoming({ id: `test-${Date.now()}`, chatId: 'cli-test', phone: '911234567890', text: q.text });
     return { message };
+  });
+
+  app.post('/agent/chat', async (req, reply) => {
+    const body = (req.body ?? {}) as { message?: string; session_id?: string };
+    if (!body.message?.trim()) return reply.code(400).send({ error: 'message is required' });
+    const message = await answerChat(body.message, body.session_id);
+    return { agent: 'chat', message };
+  });
+
+  app.post('/agent/ops', async (req, reply) => {
+    const body = (req.body ?? {}) as { message?: string };
+    if (!body.message?.trim()) return reply.code(400).send({ error: 'message is required' });
+    const message = await answerOps(body.message);
+    return { agent: 'ops', message };
   });
 }

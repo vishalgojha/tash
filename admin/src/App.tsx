@@ -8,6 +8,7 @@ import Marketing from './pages/Marketing';
 import Payments from './pages/Payments';
 import Targets from './pages/Targets';
 import Orders from './pages/Orders';
+import Agents from './pages/Agents';
 
 const nav = [
   { to: '/dashboard', label: 'Dashboard', icon: '◈' },
@@ -19,6 +20,7 @@ const nav = [
   { to: '/payments', label: 'Payments', icon: '◍' },
   { to: '/orders', label: 'Orders', icon: '☰' },
   { to: '/targets', label: 'Targets', icon: '◎' },
+  { to: '/agents', label: 'AI Agents', icon: '✦' },
 ];
 
 export default function App() {
@@ -53,6 +55,7 @@ export default function App() {
           <Route path="/payments" element={<Payments />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/targets" element={<Targets />} />
+          <Route path="/agents" element={<Agents />} />
         </Routes>
       </main>
     </div>
