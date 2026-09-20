@@ -1,5 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
+import path from 'node:path';
 import { env, log } from '../config.js';
 import { query } from '../db/pool.js';
 import { productsRoutes, agentRoutes } from './routes/routes.js';
@@ -79,6 +81,21 @@ export function buildServer() {
     protectedRoutes.register(agentRoutes, { prefix: '/api/v1' });
     protectedRoutes.register(paymentsRoutes, { prefix: '/api/v1' });
     protectedRoutes.register(analyticsRoutes, { prefix: '/api/v1' });
+  });
+
+  // Admin dashboard (built Vite SPA in admin-dist/) served on the same origin.
+  const adminDist = path.resolve(process.cwd(), 'admin-dist');
+  app.register(fastifyStatic, {
+    root: adminDist,
+    wildcard: false,
+    maxAge: '1h',
+  });
+
+  app.setNotFoundHandler((req, reply) => {
+    if (req.method === 'GET' && !req.url.startsWith('/api') && !req.url.startsWith('/health')) {
+      return reply.sendFile('index.html');
+    }
+    return reply.status(404).send({ error: 'not found' });
   });
 
   return app;
