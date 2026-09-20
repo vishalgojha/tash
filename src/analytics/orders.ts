@@ -135,7 +135,6 @@ export async function recomputeAllOrders(sinceDays = 90): Promise<{ done: number
 /** Monthly P&L from computed order economics + business plan targets. */
 export async function pnlForMonth(month: string) {
   const start = `${month}-01`;
-  const end = `${month}-01` + '::date + interval \'1 month\'';
   const { rows } = await query(
     `SELECT
         count(*)::int AS orders,
@@ -152,7 +151,7 @@ export async function pnlForMonth(month: string) {
         coalesce(sum(ad_cost),0)::numeric AS ad_cost,
         coalesce(sum(contribution_after_ads),0)::numeric AS contribution_after_ads
       FROM order_costs
-      WHERE order_id IN (SELECT id FROM orders WHERE created_at >= $1::date AND created_at < ${end})`,
+      WHERE order_id IN (SELECT id FROM orders WHERE created_at >= $1::date AND created_at < $1::date + interval '1 month')`,
     [start],
   );
   const r = rows[0];
