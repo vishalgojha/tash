@@ -28,6 +28,17 @@ export default function Products() {
   };
 
   const set = (k: string, v: any) => setEdit((s: any) => ({ ...s, [k]: v }));
+  const editRow = (r: any) => setEdit({
+    sku: r.sku,
+    vendor_cost: r.vendor_cost ?? 0,
+    embellishment: r.embellishment ?? 0,
+    packaging: r.packaging ?? 0,
+    gst_pct: r.gst_pct ?? 0,
+    lead_time_days: r.lead_time_days ?? 7,
+    safety_days: r.safety_days ?? 14,
+    target_cover_days: r.target_cover_days ?? 45,
+    classification: r.classification === 'unclassified' ? '' : (r.classification ?? ''),
+  });
 
   return (
     <Page title="Products — per-SKU cost & planning">
@@ -67,7 +78,7 @@ export default function Products() {
             <table>
               <thead>
                 <tr>
-                  <th>SKU / product</th><th>Vendor</th><th>Embell</th><th>Pack</th><th>True cost</th>
+                  <th>SKU / product</th><th>Vendor</th><th>Embell</th><th>Pack</th><th>True cost</th><th />
                   <th>GST</th><th>Lead</th><th>Safety</th><th>Target cover</th><th>Class</th>
                 </tr>
               </thead>
@@ -77,6 +88,7 @@ export default function Products() {
                     <td><b>{r.title || r.sku}</b> <span className="dim">{r.sku}</span></td>
                     <td>{inr(r.vendor_cost)}</td><td>{inr(r.embellishment)}</td><td>{inr(r.packaging)}</td>
                     <td><b>{inr(r.true_cost)}</b></td>
+                    <td><button className="btn" type="button" onClick={() => editRow(r)}>Edit</button></td>
                     <td>{r.gst_pct}%</td><td>{r.lead_time_days}d</td><td>{r.safety_days}d</td><td>{r.target_cover_days}d</td>
                     <td><span className="chip">{capitalize(r.classification)}</span></td>
                   </tr>
