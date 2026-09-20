@@ -179,7 +179,7 @@ export async function syncCustomers() {
            note=EXCLUDED.note, created_at=EXCLUDED.created_at, updated_at=EXCLUDED.updated_at,
            last_synced_at=now()`,
         [c.id, c.email ?? null, c.first_name ?? null, c.last_name ?? null, c.phone ?? null,
-         c.orders_count, c.total_spent, c.currency ?? null,
+         c.orders_count ?? 0, c.total_spent ?? 0, c.currency ?? null,
          (c.tags || '').split(',').filter(Boolean), c.note ?? null, c.created_at, c.updated_at],
       );
       seen++;
@@ -222,8 +222,8 @@ async function upsertOrder(o: ShopifyOrder) {
        ON CONFLICT (id) DO UPDATE SET email=EXCLUDED.email, first_name=EXCLUDED.first_name,
          last_name=EXCLUDED.last_name, phone=EXCLUDED.phone, tags=EXCLUDED.tags, note=EXCLUDED.note,
          updated_at=EXCLUDED.updated_at, last_synced_at=now()`,
-      [c.id, c.email ?? null, c.first_name ?? null, c.last_name ?? null, c.phone ?? null, c.orders_count,
-       c.total_spent, c.currency ?? null, (c.tags || '').split(',').filter(Boolean), c.note ?? null,
+       [c.id, c.email ?? null, c.first_name ?? null, c.last_name ?? null, c.phone ?? null, c.orders_count ?? 0,
+        c.total_spent ?? 0, c.currency ?? null, (c.tags || '').split(',').filter(Boolean), c.note ?? null,
        c.created_at, c.updated_at],
     );
     customerId = c.id;
