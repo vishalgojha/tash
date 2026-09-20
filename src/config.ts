@@ -20,10 +20,23 @@ export const env = {
   agentBusinessFacts: (process.env.AGENT_BUSINESS_FACTS ?? '').split(';').filter(Boolean),
   shiprocketEmail: process.env.SHIPROCKET_EMAIL ?? '',
   shiprocketPassword: process.env.SHIPROCKET_PASSWORD ?? '',
+  razorpayKeyId: process.env.RAZORPAY_KEY_ID ?? '',
+  razorpaySecret: process.env.RAZORPAY_KEY_SECRET ?? '',
+  razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET ?? '',
+  amazonLwaId: process.env.AMAZON_LWA_CLIENT_ID ?? '',
+  amazonLwaSecret: process.env.AMAZON_LWA_CLIENT_SECRET ?? '',
+  amazonRefreshToken: process.env.AMAZON_REFRESH_TOKEN ?? '',
+  amazonSellerId: process.env.AMAZON_SELLER_ID ?? '',
+  amazonMarketplaceId: process.env.AMAZON_MARKETPLACE_ID ?? 'A21TJRUUN4KGV',
+  nykaaClientId: process.env.NYKAA_CLIENT_ID ?? '',
+  nykaaClientSecret: process.env.NYKAA_CLIENT_SECRET ?? '',
+  metaAccessToken: process.env.META_ACCESS_TOKEN ?? '',
+  metaAdAccountId: process.env.META_AD_ACCOUNT_ID ?? '',
 };
 
 export const hasAdminAccess = () => env.adminToken.length > 0;
 export const hasShiprocket = () => env.shiprocketEmail.length > 0 && env.shiprocketPassword.length > 0;
+export const hasRazorpay = () => env.razorpayKeyId.length > 0 && env.razorpaySecret.length > 0;
 export const hasWaha = () => env.wahaApiUrl.length > 0;
 
 export function log(...args: unknown[]) {

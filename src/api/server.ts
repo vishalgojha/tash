@@ -3,6 +3,8 @@ import cors from '@fastify/cors';
 import { env, log } from '../config.js';
 import { query } from '../db/pool.js';
 import { productsRoutes, agentRoutes } from './routes/routes.js';
+import { paymentsRoutes } from './routes/payments.js';
+import { analyticsRoutes } from './routes/analytics.js';
 import { ensureSession } from '../agent/bridge.js';
 import { logAgentInfo } from '../agent/agent.js';
 import { syncCatalog, syncOrders } from '../shopify/sync.js';
@@ -11,6 +13,16 @@ export function buildServer() {
   const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? 'info' } });
 
   app.register(cors, { origin: true });
+
+  // Capture exact raw body so Razorpay webhook signature verification works byte-for-byte.
+  app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, done) => {
+    try {
+      (req as any).rawBody = String(body);
+      done(null, JSON.parse(String(body) || 'null'));
+    } catch (err) {
+      done(err as Error);
+    }
+  });
 
   app.get('/health', async () => {
     const db = await query(`SELECT 1`).then(() => true).catch(() => false);
@@ -37,12 +49,36 @@ export function buildServer() {
       'POST /api/v1/sync',
       'POST /api/v1/agent/webhook',
       'GET  /api/v1/agent/test',
+      'POST /api/v1/channels/:channel/price',
+      '--- payments (Razorpay) ---',
+      'POST /api/v1/payments/razorpay/order',
+      'GET  /api/v1/payments/razorpay/order/:id',
+      'POST /api/v1/payments/razorpay/webhook',
+      'POST /api/v1/payments/razorpay/refund',
+      'GET  /api/v1/payments/razorpay/settlements',
+      'GET  /api/v1/payments/razorpay/ledger',
+      'GET  /api/v1/payments/razorpay/payment/:id',
+      '--- Business OS command centre ---',
+      'GET  /api/v1/dashboard',
+      'GET  /api/v1/analytics/inventory',
+      'GET  /api/v1/analytics/reorder',
+      'GET  /api/v1/analytics/pnl',
+      'POST /api/v1/analytics/recompute',
+      'GET  /api/v1/targets          PUT /api/v1/targets',
+      'POST /api/v1/pricing/calculate',
+      'PUT  /api/v1/pricing/sku       GET /api/v1/pricing/skus',
+      'GET  /api/v1/analytics/cash',
+      'GET  /api/v1/analytics/marketing',
+      'POST /api/v1/marketing/meta/pull',
+      'GET  /api/v1/marketing/ad-inventory',
     ],
   }));
 
   app.register(async (protectedRoutes) => {
     protectedRoutes.register(productsRoutes, { prefix: '/api/v1' });
     protectedRoutes.register(agentRoutes, { prefix: '/api/v1' });
+    protectedRoutes.register(paymentsRoutes, { prefix: '/api/v1' });
+    protectedRoutes.register(analyticsRoutes, { prefix: '/api/v1' });
   });
 
   return app;

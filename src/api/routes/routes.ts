@@ -136,21 +136,64 @@ export async function productsRoutes(app: FastifyInstance) {
   app.post('/inventory/:sku/push', async (req, reply) => {
     const { sku } = req.params as { sku: string };
     const body = req.body as { stock?: number; channel?: string };
-    if (!Number.isInteger(body.stock)) return reply.code(400).send({ error: 'stock must be an integer' });
+    if (typeof body.stock !== 'number' || !Number.isInteger(body.stock)) return reply.code(400).send({ error: 'stock must be an integer' });
+    const stock = body.stock;
     const channels = body.channel ? [body.channel] : ['myntra'];
     const updated: string[] = [];
+    const notes: string[] = [];
     for (const channel of channels) {
       const r = await query(
         `UPDATE channel_listings SET stock=$1, last_synced_at=now() WHERE channel_id=$2 AND sku=$3 RETURNING channel_id`,
-        [body.stock, channel, sku],
+        [stock, channel, sku],
       );
       if (r.rows.length) updated.push(channel);
     }
+    if (channels.includes('nykaa')) {
+      try {
+        const { updateInventory } = await import('../../channels/nykaa.js').then((m) => m);
+        await updateInventory(sku, stock);
+        notes.push('nykaa: pushed');
+      } catch (e: any) {
+        notes.push(`nykaa: ${e.message}`);
+      }
+    }
+    if (channels.includes('amazon')) {
+      try {
+        const { pushInventory } = await import('../../channels/amazon.js').then((m) => m);
+        await pushInventory(sku, stock);
+        notes.push('amazon: pushed');
+      } catch (e: any) {
+        notes.push(`amazon: ${e.message}`);
+      }
+    }
     await query(
       `INSERT INTO inventory_ledger (sku, channel_id, delta, reason, note) VALUES ($1, NULL, $2, 'adjustment', 'manual push from API')`,
-      [sku, body.stock],
+      [sku, stock],
     );
-    return { sku, pushedTo: updated.length ? updated : ['none'], requested: channels };
+    return { sku, pushedTo: updated.length ? updated : ['none'], requested: channels, notes };
+  });
+
+  app.post('/channels/:channel/price', async (req, reply) => {
+    const { channel } = req.params as { channel: string };
+    const body = req.body as { sku: string; price?: number; compare_at?: number };
+    if (!body.sku || typeof body.price !== 'number') return reply.code(400).send({ error: 'sku + price required' });
+    const r = await query(
+      `UPDATE channel_listings SET price=$1, compare_at_price=COALESCE($2, compare_at_price), last_synced_at=now()
+        WHERE channel_id=$3 AND sku=$4 RETURNING sku`,
+      [body.price, body.compare_at ?? null, channel, body.sku],
+    );
+    if (!r.rows.length) return reply.code(404).send({ error: `no listing for ${channel}/${body.sku}` });
+    const notes: string[] = [];
+    if (channel === 'nykaa') {
+      try {
+        const { updatePrice } = await import('../../channels/nykaa.js').then((m) => m);
+        await updatePrice(body.sku, body.price);
+        notes.push('nykaa: pushed');
+      } catch (e: any) {
+        notes.push(`nykaa: ${e.message}`);
+      }
+    }
+    return { ok: true, channel, sku: body.sku, price: body.price, notes };
   });
 
   app.get('/cost-audit', async (req) => {
