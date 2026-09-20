@@ -14,7 +14,7 @@ export async function analyticsRoutes(app: FastifyInstance) {
     try {
       return await dashboard(q.month ?? new Date().toISOString().slice(0, 7));
     } catch (e: any) {
-      return reply.code(500).send({ error: e.message });
+      return reply.code(500).send({ error: e.message || 'dashboard aggregation failed', code: e.code });
     }
   });
 

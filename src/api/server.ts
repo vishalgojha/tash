@@ -98,6 +98,14 @@ export function buildServer() {
     return reply.status(404).send({ error: 'not found' });
   });
 
+  // Always return a meaningful JSON error body (pg errors and fastify defaults can carry empty messages).
+  app.setErrorHandler((err, req, reply) => {
+    const e = err as { statusCode?: number; code?: string; message?: string };
+    const status = typeof e.statusCode === 'number' && e.statusCode >= 400 && e.statusCode < 600 ? e.statusCode : 500;
+    const msg = e.message || (e.code ? `request failed (${e.code})` : 'internal server error');
+    return reply.status(status).send({ error: msg, ...(e.code ? { code: e.code } : {}) });
+  });
+
   return app;
 }
 

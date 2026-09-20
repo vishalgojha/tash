@@ -8,10 +8,16 @@ export async function api<T = any>(path: string, init?: RequestInit): Promise<T>
   if (!res.ok) {
     const text = await res.text();
     let msg = text;
+    let code: string | undefined;
     try {
-      msg = JSON.parse(text)?.error ?? text;
+      const j = JSON.parse(text);
+      if (j && typeof j === 'object') {
+        msg = j.error ?? j.message ?? (j.code ? `error ${j.code}` : text);
+        code = j.code;
+      }
     } catch {}
-    throw new Error(`${res.status}: ${msg}`);
+    const suffix = code && !msg.includes(code) ? ` (${code})` : '';
+    throw new Error(`${res.status}: ${msg}${suffix}`);
   }
   return res.json() as Promise<T>;
 }
