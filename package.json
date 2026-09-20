@@ -1,0 +1,31 @@
+{
+  "name": "tashbags-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Unified backend for Tash Bags (Shopify): syncs store data into Postgres and exposes a unified API",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "migrate": "tsx src/db/migrate.ts",
+    "sync": "tsx src/scripts/sync.ts",
+    "agent": "tsx src/scripts/agent.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.0.0",
+    "node-cron": "^3.0.3",
+    "pg": "^8.13.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

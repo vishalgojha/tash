@@ -1,0 +1,51 @@
+# Tash Bags unified backend - Coolify reference config
+# Deploy: Coolify > New Resource > Dockerfile  (path: /home/vishal/tashbags)
+# After the app is created, set the domain to: app.tashbags.com
+
+APP_NAME=tashbags-backend
+APP_TYPE=docker
+APP_PORT=4000
+APP_DOMAIN=app.tashbags.com
+
+# Build
+BUILD_CONTEXT=.
+DOCKERFILE_PATH=Dockerfile
+
+# Environment (set these in Coolify now; swap DATABASE_URL to your Coolify Postgres when created)
+DATABASE_URL=postgres://tashbags:tashbags@localhost:5432/tashbags
+PORT=4000
+HOST=0.0.0.0
+SYNC_CRON=0 */4 * * *
+
+# Optional integrations (uncomment as secrets)
+# SHOPIFY_ADMIN_TOKEN=
+# SHOPIFY_MYSHOPIFY_DOMAIN=tashbags.myshopify.com
+# SHIPROCKET_EMAIL=
+# SHIPROCKET_PASSWORD=
+# WAHA_API_URL=https://waha.tashbags.com
+# WAHA_API_KEY=
+# WAHA_SESSION=default
+# AGENT_OWNER_PHONES=
+# AGENT_LAPTOP_ALERT=false
+# GEMINI_API_KEY=
+# GROQ_API_KEY=
+
+# SSL
+SSL_ENABLED=true
+SSL_PROVIDER=letsencrypt
+SSL_EMAIL=vishal@chaoscraftlabs.com
+
+# Health check (matches Dockerfile HEALTHCHECK AND /health endpoint)
+HEALTHCHECK_ENABLED=true
+HEALTHCHECK_PATH=/health
+HEALTHCHECK_INTERVAL=30
+HEALTHCHECK_TIMEOUT=5
+
+# Runtime
+DEPLOY_STRATEGY=rolling
+ZERO_DOWNTIME=true
+AUTO_RESTART=true
+LOG_RETENTION_DAYS=14
+
+# Postgres: create a separate Coolify database resource (postgres:16)
+# then point DATABASE_URL at it and run `npm run migrate` once (via terminal in coolify).
