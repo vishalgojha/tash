@@ -22,13 +22,17 @@ export async function api<T = any>(path: string, init?: RequestInit): Promise<T>
   return res.json() as Promise<T>;
 }
 
-export const inr = (n: number | null | undefined, digits = 0) =>
-  n == null || Number.isNaN(Number(n))
+export const inr = (n: number | null | undefined, digits = 0) => {
+  const v = Number(n);
+  return Number.isNaN(v) || n == null
     ? '—'
-    : `₹${Number(n).toLocaleString('en-IN', { maximumFractionDigits: digits, minimumFractionDigits: digits })}`;
+    : `₹${(v || 0).toLocaleString('en-IN', { maximumFractionDigits: digits, minimumFractionDigits: digits })}`;
+};
 
-export const num = (n: number | null | undefined, digits = 0) =>
-  n == null ? '—' : Number(n).toLocaleString('en-IN', { maximumFractionDigits: digits });
+export const num = (n: number | null | undefined, digits = 0) => {
+  const v = Number(n);
+  return n == null || Number.isNaN(v) ? '—' : (v || 0).toLocaleString('en-IN', { maximumFractionDigits: digits });
+};
 
 export const pct = (n: number | null | undefined) => (n == null ? '—' : `${Number(n)}%`);
 

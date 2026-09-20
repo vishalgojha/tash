@@ -59,6 +59,7 @@ async function upsertProduct(p: ShopifyProduct) {
   const priceMin = prices.length ? Math.min(...prices) : 0;
   const priceMax = prices.length ? Math.max(...prices) : 0;
   const available = p.variants.some((v) => v.available);
+  const status = p.status ?? (available ? 'active' : 'unavailable');
 
   await query(
     `INSERT INTO products (id, handle, title, body_html, vendor, product_type, tags, status, options, images,
@@ -71,7 +72,7 @@ async function upsertProduct(p: ShopifyProduct) {
        published_at=EXCLUDED.published_at, created_at=EXCLUDED.created_at, updated_at=EXCLUDED.updated_at,
        price_min=EXCLUDED.price_min, price_max=EXCLUDED.price_max, available=EXCLUDED.available,
        last_synced_at=now()`,
-    [p.id, p.handle, p.title, p.body_html ?? '', p.vendor, p.product_type, p.tags, p.status,
+    [p.id, p.handle, p.title, p.body_html ?? '', p.vendor, p.product_type, p.tags, status,
      JSON.stringify(p.options), JSON.stringify(p.images), p.published_at, p.created_at, p.updated_at,
      priceMin, priceMax, available],
   );
@@ -216,8 +217,7 @@ async function upsertOrder(o: ShopifyOrder) {
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,now())
        ON CONFLICT (id) DO UPDATE SET email=EXCLUDED.email, first_name=EXCLUDED.first_name,
          last_name=EXCLUDED.last_name, phone=EXCLUDED.phone, tags=EXCLUDED.tags, note=EXCLUDED.note,
-         updated_at=EXCLUDED.updated_at, last_synced_at=now()
-       ON CONFLICT (id) DO NOTHING`,
+         updated_at=EXCLUDED.updated_at, last_synced_at=now()`,
       [c.id, c.email ?? null, c.first_name ?? null, c.last_name ?? null, c.phone ?? null, c.orders_count,
        c.total_spent, c.currency ?? null, (c.tags || '').split(',').filter(Boolean), c.note ?? null,
        c.created_at, c.updated_at],
