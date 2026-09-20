@@ -93,7 +93,7 @@ export async function computeOrderEconomics(orderId: number | bigint) {
     [
       orderId, o.channel_id ?? 'shopify', revenue, revenueNetGst, discount, Math.round(fees.gst * 100) / 100,
       fees.productCost, shippingCost, Number(o.total_shipping ?? 0), paymentFee, codFee, marketplaceFee,
-      Number(o.rto_penalty ?? 0), Number(o.reconciled ?? false),
+      Number(o.rto_penalty ?? 0), contributionPreAds, Number(o.reconciled ?? false),
     ],
   );
 
