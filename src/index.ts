@@ -10,15 +10,23 @@ async function main() {
   if (dbOk) {
     try {
       await migrate();
-      await syncCatalog();
-      await syncOrders();
     } catch (e: any) {
-      log('startup migrate/sync warning:', e.message);
+      log('startup migration warning:', e.message);
     }
   } else {
     log('database not reachable at boot — server will start degraded (db:false). Set DATABASE_URL to a reachable Postgres and restart.');
   }
   await boot(dbOk);
+  if (dbOk) {
+    void (async () => {
+      try {
+        await syncCatalog();
+        await syncOrders();
+      } catch (e: any) {
+        log('background Shopify sync warning:', e.message);
+      }
+    })();
+  }
 }
 
 main().catch(async (e) => {
