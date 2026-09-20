@@ -117,8 +117,8 @@ async function upsertListing(v: ShopifyVariant, p: ShopifyProduct) {
        title=EXCLUDED.title, price=EXCLUDED.price, compare_at_price=EXCLUDED.compare_at_price,
        stock=EXCLUDED.stock, status=EXCLUDED.status, weight_g=EXCLUDED.weight_g, data=EXCLUDED.data,
        last_synced_at=now()`,
-    ['shopify', p.id, v.id, String(v.id), sku, v.title, v.price, v.compare_at_price ?? null,
-     v.available ? (v.inventory_quantity > 0 ? v.inventory_quantity : null) : 0,
+    [p.id, v.id, String(v.id), sku, v.title, v.price, v.compare_at_price ?? null,
+      v.available ? Math.max(0, v.inventory_quantity ?? 0) : 0,
      v.available ? 'active' : 'unavailable', v.weight ?? 0,
      JSON.stringify({ handle: p.handle, product_id: String(p.id), image: p.images[0]?.src ?? null })],
   );
