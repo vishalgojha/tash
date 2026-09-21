@@ -90,7 +90,8 @@ export function buildServer() {
   app.register(fastifyStatic, {
     root: adminDist,
     wildcard: false,
-    maxAge: '1h',
+    // index.html references hashed bundles; never cache it across deployments.
+    maxAge: 0,
   });
 
   app.setNotFoundHandler((req, reply) => {
