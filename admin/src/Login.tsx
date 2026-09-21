@@ -1,6 +1,8 @@
 import { FormEvent, useState } from 'react';
 import { ownerEmail, supabase, supabaseConfigured } from './supabase';
 
+const passwordResetUrl = 'https://app.tashbags.com/reset-password';
+
 type LoginMode = 'password' | 'magic' | 'forgot';
 
 export default function Login() {
@@ -25,7 +27,7 @@ export default function Login() {
       ? await supabase.auth.signInWithPassword({ email: address, password })
       : mode === 'magic'
         ? await supabase.auth.signInWithOtp({ email: address, options: { emailRedirectTo: window.location.origin } })
-        : await supabase.auth.resetPasswordForEmail(address, { redirectTo: window.location.origin });
+        : await supabase.auth.resetPasswordForEmail(address, { redirectTo: passwordResetUrl });
 
     if (result.error) setError(result.error.message);
     else if (mode === 'magic') setSuccess('Magic link sent. Check your email to sign in.');

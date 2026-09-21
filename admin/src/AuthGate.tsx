@@ -7,7 +7,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
   const [denied, setDenied] = useState(false);
-  const [recovery, setRecovery] = useState(false);
+  const [recovery, setRecovery] = useState(() => window.location.hash.includes('type=recovery'));
 
   useEffect(() => {
     if (!supabase) {
@@ -22,7 +22,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
       setDenied(nextSession?.user.email?.toLowerCase() !== ownerEmail);
-      setRecovery(event === 'PASSWORD_RECOVERY');
+      if (event === 'PASSWORD_RECOVERY' || window.location.hash.includes('type=recovery')) setRecovery(true);
     });
     return () => listener.subscription.unsubscribe();
   }, []);
