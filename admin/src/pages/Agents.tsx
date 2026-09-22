@@ -49,7 +49,7 @@ export default function Agents() {
   return (
     <Page title="AI workspace">
       <div className="agent-layout">
-        <Card title="Your AI team">
+        <Card title="Your AI team" className="agent-rail-card">
           <div className="agent-switcher">
             <button className={`agent-choice ${kind === 'ops' ? 'active' : ''}`} onClick={() => setKind('ops')}>
               <b>Ops AI</b><span>Business decisions, stock, profit and margins</span>
@@ -61,11 +61,17 @@ export default function Agents() {
           <div className="agent-note">
             {kind === 'ops' ? 'Ops AI is read-only and uses live Business OS data.' : 'Chat AI uses the same customer conversation memory as WhatsApp.'}
           </div>
+          <div className="agent-history-note"><span className="history-dot" /> Conversation history is saved</div>
         </Card>
 
-        <Card title={kind === 'ops' ? 'Ops AI workspace' : 'Chat AI workspace'} className="agent-chat-card">
-          <div className="chat-log">
-            {messages[kind].length === 0 && <div className="empty-agent"><b>What should we focus on?</b><span>Ask about profit, inventory, orders, margins, or customers.</span></div>}
+        <Card className="agent-chat-card">
+          <header className="agent-stage-head">
+            <div className="agent-orb">✦</div>
+            <div><b>{kind === 'ops' ? 'Ops AI' : 'Chat AI'}</b><span>{kind === 'ops' ? 'Your live business analyst' : 'Customer conversation assistant'}</span></div>
+            <span className="agent-live"><i /> Live</span>
+          </header>
+          <div className={`chat-log${messages[kind].length === 0 ? ' is-empty' : ''}`}>
+            {messages[kind].length === 0 && <div className="empty-agent"><div className="empty-spark">✦</div><b>What should we focus on?</b><span>Ask about profit, inventory, orders, margins, or customers.</span></div>}
             {messages[kind].map((message, index) => (
               <div key={index} className={`chat-message ${message.role}`}>
                 <div className="chat-author">{message.role === 'agent' ? 'Ops AI' : 'You'}</div>
@@ -79,8 +85,8 @@ export default function Agents() {
           </div>
           {error && <div className="err">{error}</div>}
           <form className="agent-form" onSubmit={send}>
-            <input className="input" value={input} onChange={(event) => setInput(event.target.value)} placeholder={kind === 'ops' ? 'Ask about the business...' : 'Ask the customer assistant...'} />
-            <button className="btn" disabled={busy || !input.trim()}>Send</button>
+            <div className="composer-wrap"><textarea value={input} onChange={(event) => setInput(event.target.value)} placeholder={kind === 'ops' ? 'Ask anything about your business...' : 'Ask the customer assistant...'} rows={2} /><div className="composer-tools"><span>⌘ Live data enabled</span><span>Enter to send</span></div></div>
+            <button className="send-round" disabled={busy || !input.trim()} aria-label="Send">↑</button>
           </form>
         </Card>
       </div>
