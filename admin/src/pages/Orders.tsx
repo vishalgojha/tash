@@ -26,9 +26,9 @@ export default function Orders() {
   );
 }
 
-export function Page({ title, children, right }: any) {
+export function Page({ title, children, right, className = '' }: any) {
   return (
-    <div className="page">
+    <div className={`page ${className}`}>
       <header className="page-head">
         <h1>{title}</h1>
         {right}

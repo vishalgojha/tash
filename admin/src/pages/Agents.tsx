@@ -47,7 +47,7 @@ export default function Agents() {
   };
 
   return (
-    <Page title="AI workspace">
+    <Page title="AI workspace" className="agent-page">
       <div className="agent-layout">
         <Card title="Your AI team" className="agent-rail-card">
           <div className="agent-switcher">
@@ -68,6 +68,7 @@ export default function Agents() {
           <header className="agent-stage-head">
             <div className="agent-orb">✦</div>
             <div><b>{kind === 'ops' ? 'Ops AI' : 'Chat AI'}</b><span>{kind === 'ops' ? 'Your live business analyst' : 'Customer conversation assistant'}</span></div>
+            <div className="agent-mode-switch"><button className={kind === 'ops' ? 'active' : ''} onClick={() => setKind('ops')}>Ops</button><button className={kind === 'chat' ? 'active' : ''} onClick={() => setKind('chat')}>Chat</button></div>
             <span className="agent-live"><i /> Live</span>
           </header>
           <div className={`chat-log${messages[kind].length === 0 ? ' is-empty' : ''}`}>
