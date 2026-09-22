@@ -32,7 +32,7 @@ async function opsContext() {
   };
 }
 
-export async function answerOps(message: string) {
+export async function answerOps(message: string, history: { role: string; content: string }[] = []) {
   const question = message.trim();
   if (!question) throw new Error('message is required');
 
@@ -48,7 +48,21 @@ export async function answerOps(message: string) {
       `Never invent data. You are read-only: do not claim to have changed stock, prices, orders, or campaigns. ` +
       `If the context is insufficient, say exactly what data is missing.`,
     `${question}\n\nBUSINESS CONTEXT:\n${JSON.stringify(context)}`,
+    history,
   );
 
   return response ?? FALLBACK;
+}
+
+export async function opsHistory(sessionId: string, limit = 50) {
+  const { rows } = await import('../db/pool.js').then(({ query }) => query(
+    `SELECT role, content FROM ops_conversations WHERE session_id=$1 ORDER BY created_at DESC LIMIT $2`,
+    [sessionId, limit],
+  ));
+  return rows.reverse();
+}
+
+export async function rememberOps(sessionId: string, role: 'user' | 'assistant', content: string) {
+  const { query } = await import('../db/pool.js');
+  await query(`INSERT INTO ops_conversations (session_id, role, content) VALUES ($1,$2,$3)`, [sessionId, role, content]);
 }

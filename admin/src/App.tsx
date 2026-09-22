@@ -9,7 +9,6 @@ import Payments from './pages/Payments';
 import Targets from './pages/Targets';
 import Orders from './pages/Orders';
 import Agents from './pages/Agents';
-import OpsWidget from './components/OpsWidget';
 
 const nav = [
   { to: '/dashboard', label: 'Dashboard', icon: '◈' },
@@ -59,7 +58,6 @@ export default function App() {
           <Route path="/agents" element={<Agents />} />
         </Routes>
       </main>
-      <OpsWidget />
     </div>
   );
 }

@@ -1,6 +1,7 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { api } from '../api';
 import { Card, Page } from './Orders';
+import RichText from '../components/RichText';
 
 type AgentKind = 'ops' | 'chat';
 type Message = { role: 'user' | 'agent'; content: string };
@@ -16,6 +17,13 @@ export default function Agents() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [messages, setMessages] = useState<Record<AgentKind, Message[]>>({ ops: [], chat: [] });
+
+  useEffect(() => {
+    if (kind !== 'ops') return;
+    api<{ messages: Message[] }>('/agent/ops/history?session_id=admin')
+      .then((result) => setMessages((current) => ({ ...current, ops: result.messages })))
+      .catch(() => undefined);
+  }, [kind]);
 
   const send = async (event?: FormEvent) => {
     event?.preventDefault();
@@ -39,9 +47,9 @@ export default function Agents() {
   };
 
   return (
-    <Page title="AI Agents">
+    <Page title="AI workspace">
       <div className="agent-layout">
-        <Card title="Choose an agent">
+        <Card title="Your AI team">
           <div className="agent-switcher">
             <button className={`agent-choice ${kind === 'ops' ? 'active' : ''}`} onClick={() => setKind('ops')}>
               <b>Ops AI</b><span>Business decisions, stock, profit and margins</span>
@@ -57,9 +65,12 @@ export default function Agents() {
 
         <Card title={kind === 'ops' ? 'Ops AI workspace' : 'Chat AI workspace'} className="agent-chat-card">
           <div className="chat-log">
-            {messages[kind].length === 0 && <div className="empty-agent">Ask a question or choose a prompt below.</div>}
+            {messages[kind].length === 0 && <div className="empty-agent"><b>What should we focus on?</b><span>Ask about profit, inventory, orders, margins, or customers.</span></div>}
             {messages[kind].map((message, index) => (
-              <div key={index} className={`chat-message ${message.role}`}><span>{message.content}</span></div>
+              <div key={index} className={`chat-message ${message.role}`}>
+                <div className="chat-author">{message.role === 'agent' ? 'Ops AI' : 'You'}</div>
+                <div className="chat-bubble">{message.role === 'agent' ? <RichText text={message.content} /> : message.content}</div>
+              </div>
             ))}
             {busy && <div className="chat-message agent"><span className="muted">Thinking…</span></div>}
           </div>

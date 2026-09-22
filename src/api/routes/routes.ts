@@ -7,7 +7,7 @@ import { getShippingRates } from '../../shiprocket/client.js';
 import { parseWebhook, notifyLaptop } from '../../agent/bridge.js';
 import { handleIncoming } from '../../agent/agent.js';
 import { answerChat } from '../../agent/chat-agent.js';
-import { answerOps } from '../../agent/ops-agent.js';
+import { answerOps, opsHistory, rememberOps } from '../../agent/ops-agent.js';
 
 export async function productsRoutes(app: FastifyInstance) {
   app.get('/products', async (req) => {
@@ -297,9 +297,19 @@ export async function agentRoutes(app: FastifyInstance) {
   });
 
   app.post('/agent/ops', async (req, reply) => {
-    const body = (req.body ?? {}) as { message?: string };
+    const body = (req.body ?? {}) as { message?: string; session_id?: string };
     if (!body.message?.trim()) return reply.code(400).send({ error: 'message is required' });
-    const message = await answerOps(body.message);
+    const sessionId = body.session_id?.trim().slice(0, 120) || 'admin';
+    const history = await opsHistory(sessionId, 12);
+    await rememberOps(sessionId, 'user', body.message.trim());
+    const message = await answerOps(body.message, history);
+    await rememberOps(sessionId, 'assistant', message);
     return { agent: 'ops', message };
+  });
+
+  app.get('/agent/ops/history', async (req) => {
+    const q = (req.query ?? {}) as { session_id?: string };
+    const sessionId = q.session_id?.trim().slice(0, 120) || 'admin';
+    return { messages: await opsHistory(sessionId) };
   });
 }
