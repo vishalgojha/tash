@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import Login, { PasswordReset } from './Login';
-import { ownerEmail, supabase } from './supabase';
+import { isAuthorizedEmail, ownerEmail, supabase } from './supabase';
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -21,12 +21,12 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     }
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      setDenied(data.session?.user.email?.toLowerCase() !== ownerEmail);
+       setDenied(!isAuthorizedEmail(data.session?.user.email));
       setReady(true);
     });
     const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
-      setDenied(nextSession?.user.email?.toLowerCase() !== ownerEmail);
+       setDenied(!isAuthorizedEmail(nextSession?.user.email));
       if (event === 'PASSWORD_RECOVERY' || window.location.pathname === '/reset-password' || window.location.hash.includes('type=recovery')) setRecovery(true);
     });
     return () => listener.subscription.unsubscribe();

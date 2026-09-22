@@ -7,3 +7,5 @@ const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? 'sb_publishable_YGV
 export const supabase = key ? createClient(url, key) : null;
 export const supabaseConfigured = Boolean(key);
 export const ownerEmail = 'thetashbags@gmail.com';
+export const authorizedEmails = [ownerEmail, 'chariotrealty@gmail.com'];
+export const isAuthorizedEmail = (email?: string | null) => authorizedEmails.includes((email ?? '').toLowerCase());

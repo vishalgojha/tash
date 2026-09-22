@@ -1,9 +1,9 @@
 import { FormEvent, useState } from 'react';
-import { ownerEmail, supabase, supabaseConfigured } from './supabase';
+import { authorizedEmails, ownerEmail, supabase, supabaseConfigured } from './supabase';
 
 const passwordResetUrl = 'https://app.tashbags.com/reset-password';
 
-type LoginMode = 'password' | 'magic' | 'forgot';
+type LoginMode = 'password' | 'magic' | 'forgot' | 'signup';
 
 export default function Login() {
   const [mode, setMode] = useState<LoginMode>('password');
@@ -23,20 +23,28 @@ export default function Login() {
     setError('');
     setSuccess('');
     const address = email.trim();
+    if (mode === 'signup' && !authorizedEmails.includes(address.toLowerCase())) {
+      setError('Test access is restricted to the approved email address.');
+      setBusy(false);
+      return;
+    }
     const result = mode === 'password'
       ? await supabase.auth.signInWithPassword({ email: address, password })
       : mode === 'magic'
         ? await supabase.auth.signInWithOtp({ email: address, options: { emailRedirectTo: window.location.origin } })
-        : await supabase.auth.resetPasswordForEmail(address, { redirectTo: passwordResetUrl });
+        : mode === 'forgot'
+          ? await supabase.auth.resetPasswordForEmail(address, { redirectTo: passwordResetUrl })
+          : await supabase.auth.signUp({ email: address, password, options: { emailRedirectTo: window.location.origin } });
 
     if (result.error) setError(result.error.message);
     else if (mode === 'magic') setSuccess('Magic link sent. Check your email to sign in.');
+    else if (mode === 'signup') setSuccess('Test account created. Check your email if confirmation is required, then sign in.');
     else if (mode === 'forgot') setSuccess('Password reset link sent. Check your email to continue.');
     setBusy(false);
   }
 
-  const title = mode === 'password' ? 'Business OS' : mode === 'magic' ? 'Magic link sign in' : 'Reset password';
-  const action = mode === 'password' ? 'Sign in' : mode === 'magic' ? 'Send magic link' : 'Send reset link';
+  const title = mode === 'password' ? 'Business OS' : mode === 'magic' ? 'Magic link sign in' : mode === 'signup' ? 'Create test access' : 'Reset password';
+  const action = mode === 'password' ? 'Sign in' : mode === 'magic' ? 'Send magic link' : mode === 'signup' ? 'Create account' : 'Send reset link';
 
   return (
     <main className="login-shell">
@@ -48,14 +56,14 @@ export default function Login() {
         {!supabaseConfigured && <div className="login-warning">Authentication is not configured for this build.</div>}
         <form className="form" onSubmit={submit}>
           <label>Email<input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
-          {mode === 'password' && <label>Password<input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>}
+          {(mode === 'password' || mode === 'signup') && <label>Password<input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={8} required /></label>}
           {error && <div className="err">{error}</div>}
           {success && <div className="login-success">{success}</div>}
           <button className="btn login-button" disabled={busy}>{busy ? 'Sending…' : action}</button>
         </form>
         <div className="login-links">
           {mode !== 'password' && <button className="link-button" onClick={() => { setMode('password'); setError(''); setSuccess(''); }}>Back to password sign in</button>}
-          {mode === 'password' && <><button className="link-button" onClick={() => { setMode('forgot'); setError(''); setSuccess(''); }}>Forgot password?</button><button className="link-button" onClick={() => { setMode('magic'); setError(''); setSuccess(''); }}>Use magic link instead</button></>}
+          {mode === 'password' && <><button className="link-button" onClick={() => { setMode('forgot'); setError(''); setSuccess(''); }}>Forgot password?</button><button className="link-button" onClick={() => { setMode('magic'); setError(''); setSuccess(''); }}>Use magic link instead</button><button className="link-button" onClick={() => { setMode('signup'); setError(''); setSuccess(''); }}>Create test access</button></>}
         </div>
         <div className="login-foot">Owner access · {ownerEmail}</div>
       </section>
